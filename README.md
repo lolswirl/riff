@@ -10,8 +10,12 @@ artist, and album and year. At the bottom: a play or pause button (it shows what
 line with a dot, and total time. The third text line also shows messages: the controls after the app starts or wakes,
 swipe feedback, and the position while scrubbing. When a song changes, the old text stays until the new cover is in.
 
+<img src="imgs/full.png" alt="The full display" width="576">
+
 **Corner display:** after an idle time the player shrinks into a corner: a small cover (with a pause symbol while
 paused), title, artist and a progress bar. It can hide completely and reappear on a song change or any gesture.
+
+<img src="imgs/corner.png" alt="The corner display, playing" width="288"> <img src="imgs/corner-paused.png" alt="The corner display, paused" width="288">
 
 ## Controls
 
