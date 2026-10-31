@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Riff sign-in</title>
+    <style>
+      html, body { margin: 0; min-height: 100%; background: #232323; color: #E5E5E5; font: 16px/1.5 -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+      main { padding: 24px; max-width: 480px; margin: 0 auto; box-sizing: border-box; }
+      h1 { font-size: 20px; margin: 0 0 8px; }
+      p { margin: 0 0 16px; color: #A3A3A3; }
+      textarea { width: 100%; box-sizing: border-box; height: 120px; padding: 10px; font: 13px/1.4 ui-monospace, monospace; color: inherit; background: #2f2f2f; border: 1px solid #444; border-radius: 6px; resize: none; }
+      button { display: block; width: 100%; margin: 12px 0; padding: 12px 16px; font: inherit; color: #232323; background: #E5E5E5; border: 0; border-radius: 6px; }
+      #done { color: #E5E5E5; min-height: 1.5em; }
+      [hidden] { display: none; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div id="ok" hidden>
+        <h1>Almost done</h1>
+        <p>Copy your sign-in code, go back to Riff's settings, and paste it into the box. Then tap Finish sign-in.</p>
+        <textarea id="code" readonly></textarea>
+        <button id="copy">Copy sign-in code</button>
+        <div id="done"></div>
+        <p>This code only works with the Riff sign-in you just started. Nothing on this page is sent anywhere.</p>
+      </div>
+      <div id="denied" hidden>
+        <h1>Sign-in was not approved</h1>
+        <p id="reason"></p>
+        <p>Go back to Riff's settings and tap Sign in with Spotify to try again.</p>
+      </div>
+      <div id="idle" hidden>
+        <h1>Riff sign-in</h1>
+        <p>This page catches the end of signing in to Spotify from Riff. Start from Riff's settings on your phone.</p>
+      </div>
+    </main>
+    <script>
+      const params = new URLSearchParams(location.search);
+      const show = (id) => (document.getElementById(id).hidden = false);
+      if (params.get('error')) {
+        document.getElementById('reason').textContent = `Spotify said: ${params.get('error')}.`;
+        show('denied');
+      } else if (params.get('code')) {
+        const box = document.getElementById('code');
+        box.value = location.href;
+        show('ok');
+        document.getElementById('copy').addEventListener('click', async () => {
+          try {
+            await navigator.clipboard.writeText(location.href);
+            document.getElementById('done').textContent = 'Copied.';
+          } catch {
+            box.select();
+            document.getElementById('done').textContent = 'Press and hold the box to copy it.';
+          }
+        });
+      } else {
+        show('idle');
+      }
+    </script>
+  </body>
+</html>

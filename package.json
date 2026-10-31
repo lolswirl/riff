@@ -1,0 +1,25 @@
+{
+  "name": "riff",
+  "private": true,
+  "version": "0.2.3",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "node --experimental-strip-types --no-warnings --test \"test/*.test.ts\"",
+    "auth": "node scripts/auth.mjs",
+    "pack": "npm run build && node scripts/bump.mjs && evenhub pack app.json dist -o riff.ehpk",
+    "simulate": "node node_modules/@evenrealities/evenhub-simulator/bin/index.js http://localhost:5173"
+  },
+  "dependencies": {
+    "@evenrealities/even_hub_sdk": "^0.0.16"
+  },
+  "devDependencies": {
+    "@evenrealities/evenhub-cli": "^0.1.12",
+    "@evenrealities/evenhub-simulator": "^0.9.5",
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.0",
+    "vite": "^5.4.0"
+  }
+}

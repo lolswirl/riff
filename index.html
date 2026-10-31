@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
+    <title>Riff</title>
+    <style>
+      html, body {
+        margin: 0;
+        min-height: 100%;
+        background: #232323;
+        color: #E5E5E5;
+        font: 15px/1.4 -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+        touch-action: manipulation;
+        -webkit-text-size-adjust: 100%;
+        overscroll-behavior: none;
+      }
+      main { padding: 24px; max-width: 480px; margin: 0 auto; box-sizing: border-box; }
+      h1 { font-size: 18px; margin: 0 0 4px; }
+      p { margin: 0 0 16px; color: #A3A3A3; }
+      label { display: block; margin: 12px 0 4px; }
+      input[type=text], input[type=password], select {
+        width: 100%; box-sizing: border-box; padding: 10px; font: inherit;
+        color: inherit; background: #2f2f2f; border: 1px solid #444; border-radius: 6px;
+      }
+      details { margin: 0 0 16px; padding: 10px 14px; background: #2a2a2a; border: 1px solid #444; border-radius: 6px; }
+      summary { cursor: pointer; font-weight: 600; }
+      details ol { margin: 12px 0 0; padding-left: 20px; color: #A3A3A3; }
+      details li { margin: 0 0 14px; }
+      details li input, details li button { display: block; width: 100%; box-sizing: border-box; margin-top: 8px; }
+      details li a#signin-link { display: block; margin-top: 8px; }
+      details a { color: #E5E5E5; }
+      details code { color: #E5E5E5; word-break: break-all; user-select: all; }
+      #signin-status { margin-top: 8px; color: #A3A3A3; white-space: pre-line; }
+      .row { display: flex; align-items: center; gap: 8px; margin: 12px 0; }
+      button {
+        margin-top: 8px; padding: 10px 16px; font: inherit; color: #232323;
+        background: #E5E5E5; border: 0; border-radius: 6px;
+      }
+      /* pinned to the bottom of the screen while the settings scroll behind it. fixed rather than sticky, and with no
+         negative margins, so it can't depend on which element the webview scrolls or add a sideways scrollbar */
+      main { padding-bottom: 124px; }
+      .savebar {
+        position: fixed; left: 0; right: 0; bottom: 0; z-index: 1; box-sizing: border-box;
+        padding: 12px 24px calc(32px + env(safe-area-inset-bottom));
+        background: #232323; border-top: 1px solid #444;
+      }
+      .savebar > button { max-width: 432px; margin: 0 auto !important; }
+      .savebar button { display: block; width: 100%; }
+      #status { margin-top: 16px; color: #A3A3A3; white-space: pre-line; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Riff</h1>
+      <p>Spotify on your G2. Open Set up Spotify below to connect it, which takes a few minutes and only needs this phone.</p>
+
+      <details id="setup">
+        <summary>Set up Spotify</summary>
+        <ol>
+          <li>
+            Open the <a href="https://developer.spotify.com/dashboard" target="_blank" rel="noopener">Spotify developer dashboard</a>,
+            log in, and tap Create app. Any name and description will do.
+          </li>
+          <li>Add this as a Redirect URI, tick Web API, and save: <code id="redirect-uri"></code></li>
+          <li>
+            Open the new app's Settings, copy its Client ID, and paste it here:
+            <input id="client-id" type="text" aria-label="Spotify client ID" autocomplete="off" autocapitalize="off" spellcheck="false" />
+          </li>
+          <li>
+            Tap this, approve, and you'll land on a Riff page with a Copy button. Tap it to copy your sign-in code.
+            <button id="signin">Sign in with Spotify</button>
+            <a id="signin-link" href="#" target="_blank" rel="noopener" hidden>Sign-in page didn't open? Tap here.</a>
+          </li>
+          <li>
+            Come back and paste the code here, then finish:
+            <input id="redirect" type="text" aria-label="Sign-in code" autocomplete="off" autocapitalize="off" spellcheck="false" />
+            <button id="finish">Finish sign-in</button>
+            <div id="signin-status"></div>
+          </li>
+        </ol>
+        <label for="refresh-token">Already have a refresh token? Paste it here instead.</label>
+        <input id="refresh-token" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" />
+      </details>
+
+      <div class="row">
+        <input id="lowercase" type="checkbox" />
+        <label for="lowercase" style="margin: 0">Show everything on the glasses in lowercase</label>
+      </div>
+
+      <div class="row">
+        <input id="dither" type="checkbox" />
+        <label for="dither" style="margin: 0">Dither album art into dots (off shows it as plain greyscale)</label>
+      </div>
+
+      <div class="row">
+        <input id="invert" type="checkbox" />
+        <label for="invert" style="margin: 0">Swap swipe directions for next and previous</label>
+      </div>
+
+      <label for="fps">Scrubber line updates per second</label>
+      <select id="fps">
+        <option value="0">0 (only when the marker moves)</option>
+        <option value="2">2</option>
+        <option value="4">4</option>
+        <option value="6">6</option>
+      </select>
+
+      <label for="idle">Shrink into a corner after</label>
+      <select id="idle">
+        <option value="0">Never</option>
+        <option value="10">10 seconds idle</option>
+        <option value="20">20 seconds idle</option>
+        <option value="30">30 seconds idle</option>
+        <option value="60">1 minute idle</option>
+        <option value="120">2 minutes idle</option>
+      </select>
+
+      <label for="corner">Which corner</label>
+      <select id="corner">
+        <option value="top-right">Top right</option>
+        <option value="top-left">Top left</option>
+        <option value="bottom-right">Bottom right</option>
+        <option value="bottom-left">Bottom left</option>
+      </select>
+
+      <div class="row">
+        <input id="cornerbar" type="checkbox" />
+        <label for="cornerbar" style="margin: 0">Show a progress bar beside the cover in the corner</label>
+      </div>
+
+      <label for="hide">Then hide the corner completely after</label>
+      <select id="hide">
+        <option value="0">Never (it stays in the corner)</option>
+        <option value="5">5 seconds in the corner</option>
+        <option value="10">10 seconds in the corner</option>
+        <option value="20">20 seconds in the corner</option>
+        <option value="30">30 seconds in the corner</option>
+        <option value="60">1 minute in the corner</option>
+      </select>
+
+      <label for="reveal">When hidden, show the corner again for</label>
+      <select id="reveal">
+        <option value="2">2 seconds</option>
+        <option value="4">4 seconds</option>
+        <option value="6">6 seconds</option>
+        <option value="10">10 seconds</option>
+      </select>
+      <p style="margin: 6px 0 0; font-size: 13px">
+        It comes back on a song change, or when you tap or swipe on the glasses. A long press brings back the full display.
+      </p>
+
+      <div id="status"></div>
+
+      <div class="savebar"><button id="save">Save</button></div>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
